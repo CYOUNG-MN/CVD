@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)file:///Users/cyoung/Documents/GTN/cvd-prototype.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Customer Value Dashboard . Model N</title>
+<style>
+  :root {
+    --rail:#003865;
+    --rail-hi:#004c84;
+    --rail-ink:#dfeaf2;
+    --mn-blue:#1aa7ec;
+    --teal:#4a90b8;
+    --orange:#e8974a;
+    --red:#d94545;
+    --green:#7fb069;
+    --ink:#1e2a33;
+    --ink-soft:#4a5a66;
+    --ink-mute:#8395a3;
+    --rule:#e3e8ec;
+    --bg:#f3f6f8;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:13px/1.45 Roboto,"Google Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}
+  button{font:inherit;color:inherit}
+  .app{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+
+  /* ---------- Left rail ---------- */
+  .rail{background:var(--rail);color:var(--rail-ink);padding:18px 0 24px}
+  .brand{font-size:22px;font-weight:600;letter-spacing:.5px;padding:0 20px 2px;color:#fff}
+  .brand .n{color:var(--mn-blue);font-weight:700}
+  .rail .product{font-size:12px;color:#aec6d7;padding:0 20px 24px;border-bottom:1px solid #0a4876}
+  .nav{padding:16px 0}
+  .nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:#cfdfe9;text-decoration:none;font-size:14px;position:relative}
+  .nav a.active{background:var(--rail-hi);color:#fff}
+  .nav a.active::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mn-blue)}
+  .nav a .ico{width:18px;height:18px;display:inline-block;background:#5a84a3;border-radius:3px;flex:0 0 18px}
+  .nav a.active .ico{background:var(--mn-blue)}
+  .nav a .caret{margin-left:auto;color:#88a7c0;font-size:11px}
+
+  /* ---------- Main ---------- */
+  .main{padding:16px 28px 60px;min-width:0}
+  .topbar{background:#fff;border-radius:6px;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:18px}
+  .topbar .page-ico{width:28px;height:28px;border-radius:6px;background:var(--orange);display:inline-block}
+  .topbar h1{margin:0;font-size:20px;font-weight:600}
+  .topbar .userchip{margin-left:auto;width:28px;height:28px;border-radius:50%;background:#e3e8ec;display:inline-block}
+
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:4px;box-shadow:none;margin-bottom:14px}
+  .card-head{display:flex;align-items:center;padding:12px 16px 10px;border-bottom:1px solid var(--rule)}
+  .card-head h2{margin:0;font-size:14px;font-weight:500;color:var(--ink);letter-spacing:.1px}
+  .card-head .sub{margin-left:10px;color:var(--ink-mute);font-size:11px}
+  .card-head .tools{margin-left:auto;display:flex;gap:14px;color:var(--ink-mute);font-size:16px}
+  .card-head .tools button{background:none;border:none;cursor:pointer;color:var(--ink-mute);font-size:16px;padding:4px}
+  .card-head .tools button:hover{color:var(--ink)}
+
+  /* ---------- Filters ---------- */
+  .filters{display:flex;gap:22px;padding:4px 22px 10px}
+  .filter{display:flex;flex-direction:column;gap:4px}
+  .filter label{font-size:12px;color:var(--ink-soft)}
+  .filter .val{background:#eaf2f8;border:1px solid #d4e2ee;border-radius:4px;padding:6px 12px;font-size:13px;min-width:150px;cursor:pointer}
+  .filter .val:hover{background:#dfecf6}
+
+  /* ---------- Hero tiles (Looker scorecard style) ---------- */
+  .hero{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 22px 18px}
+  .tile{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:14px 16px;position:relative;overflow:hidden;color:var(--ink);display:flex;flex-direction:column;gap:4px;min-height:110px}
+  .tile .k{font-size:11px;letter-spacing:.3px;color:var(--ink-mute);font-weight:500;text-transform:none}
+  .tile .v{font-size:34px;font-weight:400;letter-spacing:-.5px;color:var(--ink);line-height:1.1;font-family:"Roboto","Google Sans",sans-serif}
+  .tile .trend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .tile .trend .up{color:#188038;font-weight:500}
+  .tile .trend .down{color:#c5221f;font-weight:500}
+  .tile .trend .vs{color:var(--ink-mute)}
+  .tile .spark{margin-top:auto;height:28px}
+
+  /* ---------- Waterfall ---------- */
+  .wf-card{padding:14px 22px 18px}
+  .wf-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+  .wf-head h3{margin:0;font-size:18px;font-weight:600}
+  .wf-head .sub{color:var(--ink-mute);font-size:12px}
+  .wf-legend{display:flex;gap:18px;font-size:12px;color:var(--ink-soft);justify-content:flex-end;padding:0 10px 6px}
+  .wf-legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .wf-svg{width:100%;height:auto;display:block}
+  .wf-tip{position:fixed;pointer-events:none;background:#fff;color:var(--ink);border-radius:8px;padding:12px 14px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:50;max-width:320px;display:none;border:1px solid var(--rule)}
+  .wf-tip .tt{font-weight:700;font-size:14px;margin-bottom:6px;color:var(--ink)}
+  .wf-tip .row{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border-bottom:1px solid var(--rule)}
+  .wf-tip .row:last-of-type{border-bottom:none;margin-bottom:6px}
+  .wf-tip .row.red{color:var(--red);font-weight:600}
+  .wf-tip .desc{color:var(--ink-soft);line-height:1.4;margin-top:6px;font-size:12px}
+
+  /* ---------- Savings by reason ---------- */
+  .reason-row{display:grid;grid-template-columns:1fr 110px 80px;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid #f0f3f5;cursor:pointer;font-size:12.5px}
+  .reason-row:last-child{border-bottom:none}
+  .reason-row:hover{background:#f7fafc}
+  .reason-row .lbl{color:var(--ink)}
+  .reason-row .lbl small{display:block;color:var(--ink-mute);font-size:11px;margin-top:1px}
+  .reason-row .bar{height:6px;border-radius:1px;background:#f0f3f5;position:relative;overflow:hidden}
+  .reason-row .bar > span{display:block;height:100%;background:#d94545}
+  .reason-row .dol{font-weight:500;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);font-size:13px}
+  .card-body{padding:0}
+  .reasons-head{display:grid;grid-template-columns:1fr 110px 80px;gap:14px;padding:9px 16px;border-bottom:1px solid var(--rule);font-size:10px;color:var(--ink-mute);letter-spacing:.4px;text-transform:uppercase;font-weight:500}
+  .reasons-head .r{text-align:right}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card-body{padding:4px 22px 22px}
+
+  /* ---------- Dimensional cuts ---------- */
+  .tabs{display:flex;gap:0;padding:0 16px;border-bottom:1px solid var(--rule)}
+  .tab{background:none;border:none;padding:8px 14px;font-size:12px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500}
+  .tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:500}
+  .tab:hover:not(.active){color:var(--ink)}
+  .pane{display:none;padding:0}
+  .pane.active{display:block}
+
+  table.score{width:100%;border-collapse:collapse}
+  table.score th,table.score td{text-align:left;padding:8px 16px;font-size:12.5px;border-bottom:1px solid #f0f3f5}
+  table.score th{font-weight:500;color:var(--ink-mute);font-size:10px;letter-spacing:.4px;text-transform:uppercase;background:#fafbfc}
+  table.score td.num,table.score th.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.score tbody tr{cursor:pointer}
+  table.score tbody tr:hover{background:#f7fafc}
+  .pill{display:inline-block;padding:1px 8px;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:.2px}
+  .pill.ok{background:#e6f4ea;color:#188038}
+  .pill.warn{background:#fef7e0;color:#b06000}
+  .pill.bad{background:#fce8e6;color:#c5221f}
+  .minibar{height:4px;background:#f0f3f5;border-radius:1px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:10px}
+  .minibar > span{display:block;height:100%;background:#d94545}
+
+  /* ---------- Modal ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(10,25,40,.45);display:none;z-index:60;align-items:center;justify-content:center;padding:40px 20px}
+  .scrim.open{display:flex}
+  .modal{background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(960px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal header{padding:16px 22px;border-bottom:1px solid var(--rule);display:flex;align-items:flex-start;gap:10px}
+  .modal header h3{margin:0;font-size:18px}
+  .modal header .bc{color:var(--ink-mute);font-size:12px;margin-top:2px}
+  .modal header button.close{margin-left:auto;background:none;border:none;font-size:22px;color:var(--ink-mute);cursor:pointer;line-height:1}
+  .modal .m-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 22px;background:#f7fafc;border-bottom:1px solid var(--rule)}
+  .m-summary .k{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-mute)}
+  .m-summary .v{font-size:22px;font-weight:700;margin-top:2px}
+  .m-summary .v.red{color:var(--red)}
+  .m-summary .v.ink{color:var(--ink)}
+  .modal .m-tools{padding:12px 22px;display:flex;gap:10px;border-bottom:1px solid var(--rule)}
+  .modal .m-tools .btn{background:var(--rail);color:#fff;border:none;border-radius:4px;padding:7px 12px;font-size:12px;cursor:pointer}
+  .modal .m-tools .btn.ghost{background:#fff;color:var(--rail);border:1px solid var(--rail)}
+  .modal .m-body{overflow:auto;padding:14px 22px 22px}
+  .reason-split{margin-bottom:14px}
+  .reason-split .rs-row{display:grid;grid-template-columns:1fr 90px 70px;gap:12px;align-items:center;padding:6px 0;font-size:13px}
+  .reason-split .rs-bar{height:10px;background:#eef2f5;border-radius:2px;overflow:hidden}
+  .reason-split .rs-bar > span{display:block;height:100%;background:var(--red)}
+  table.tx{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.tx th,table.tx td{padding:8px 8px;border-bottom:1px solid var(--rule);text-align:left}
+  table.tx th{font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-soft)}
+  table.tx td.num,table.tx th.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.tx td.reason{color:#9a4515;font-weight:500}
+
+  /* ---------- Share menu ---------- */
+  .share-wrap{position:relative}
+  .share-menu{position:absolute;right:0;top:30px;background:#fff;border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.12);min-width:240px;display:none;z-index:40}
+  .share-menu.open{display:block}
+  .share-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;cursor:pointer;font-size:13px}
+  .share-menu button:hover{background:#f3f7fa}
+  .share-menu .hd{font-size:11px;color:var(--ink-mute);padding:8px 14px 4px;text-transform:uppercase;letter-spacing:.4px}
+
+  /* ---------- Print view ---------- */
+  @media print {
+    .rail,.topbar .userchip,.card-head .tools,.tabs,.pane,.filters,.scrim{display:none !important}
+    body{background:#fff}
+    .app{grid-template-columns:1fr}
+    .main{padding:0}
+    .topbar{box-shadow:none;border-bottom:2px solid var(--rail);border-radius:0;margin-bottom:10px}
+    .card{box-shadow:none;page-break-inside:avoid}
+    .hero .tile{color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .print-only{display:block !important}
+  }
+  .print-only{display:none}
+  .print-head{padding:10px 22px 0}
+  .print-head .co{font-weight:700;font-size:16px}
+  .print-head .meta{color:var(--ink-mute);font-size:12px}
+
+  @media (max-width: 1100px){
+    .two-col{grid-template-columns:1fr}
+    .hero{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Left rail -->
+  <aside class="rail">
+    <div class="brand">Model <span class="n">N</span></div>
+    <div class="product">Data nSights</div>
+    <nav class="nav">
+      <a href="file:///Users/cyoung/Documents/GTN/cvd-prototype.html#" class="active"><span class="ico"></span>BI<span class="caret">▸</span></a>
+      <a href="file:///Users/cyoung/Documents/GTN/cvd-prototype.html#"><span class="ico"></span>Data</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <span class="page-ico"></span>
+      <h1>Dashboard</h1>
+      <span class="userchip"></span>
+    </div>
+
+    <div class="print-only print-head">
+      <div class="co">Customer Value Summary . Gilead Sciences</div>
+      <div class="meta">Period: FY2026 . Generated 2026-10-21 . Prepared by Model N</div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Customer Value Dashboard</h2>
+        <div class="tools">
+          <button title="Refresh">↻</button>
+          <button title="Filter">☰</button>
+          <div class="share-wrap">
+            <button title="Share this view" onclick="toggleShare(event)">…</button>
+            <div class="share-menu" id="shareMenu">
+              <div class="hd">Share this view</div>
+              <button onclick="window.print()">Print / Save as PDF (exec summary)</button>
+              <button onclick="alert('Hero snapshot copied for email.')">Copy hero snapshot for email</button>
+              <button onclick="alert('Scheduled weekly email configured.')">Email weekly to stakeholders</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter"><label>Date Filter</label><div class="val">is in the year 2026</div></div>
+        <div class="filter"><label>Product Family (NDC9)</label><div class="val">is any value</div></div>
+      </div>
+
+      <!-- Hero scorecards (Looker style) -->
+      <div class="hero">
+        <div class="tile">
+          <div class="k">Leakage avoided</div>
+          <div class="v">$1.63B</div>
+          <div class="trend"><span class="up">▲ 12.4%</span><span class="vs">vs. FY2025</span></div>
+          <svg class="spark" viewBox="0 0 160 28" preserveAspectRatio="none"><polyline fill="none" stroke="#d94545" stroke-width="1.5" points="0,22 20,19 40,20 60,15 80,16 100,11 120,10 140,7 160,5"></polyline></svg>
+        </div>
+        <div class="tile">
+          <div class="k">Net revenue retained</div>
+          <div class="v">8.1%</div>
+          <div class="trend"><span class="up">▲ 0.9 pts</span><span class="vs">vs. FY2025</span></div>
+          <svg class="spark" viewBox="0 0 160 28" preserveAspectRatio="none"><polyline fill="none" stroke="#4a90b8" stroke-width="1.5" points="0,20 20,18 40,16 60,17 80,14 100,13 120,11 140,10 160,8"></polyline></svg>
+        </div>
+        <div class="tile">
+          <div class="k">Top leakage channel</div>
+          <div class="v">Medicaid</div>
+          <div class="trend"><span>$1.15B captured</span><span class="vs">70% of total</span></div>
+          <svg class="spark" viewBox="0 0 160 28" preserveAspectRatio="none">
+            <rect x="0" y="18" width="18" height="10" fill="#d94545"></rect>
+            <rect x="22" y="22" width="18" height="6" fill="#e8974a"></rect>
+            <rect x="44" y="25" width="18" height="3" fill="#e8974a"></rect>
+            <rect x="66" y="26" width="18" height="2" fill="#e8974a"></rect>
+            <rect x="88" y="26" width="18" height="2" fill="#e8974a"></rect>
+            <rect x="110" y="27" width="18" height="1" fill="#e8974a"></rect>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Waterfall -->
+      <div class="wf-card">
+        <div class="wf-head">
+          <h3>Gross to Net</h3>
+          <div class="sub">FY2026 . Product Portfolio . $ in millions . Click a bar for detail</div>
+        </div>
+        <div class="wf-legend">
+          <span><span class="sw" style="background:var(--teal)"></span>Gross Sales</span>
+          <span><span class="sw" style="background:var(--orange)"></span>Deductions</span>
+          <span><span class="sw" style="background:var(--red)"></span>Savings / Leakage Opportunity</span>
+          <span><span class="sw" style="background:var(--green)"></span>Net Revenue</span>
+        </div>
+        <svg class="wf-svg" id="wf" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid meet"><line x1="60" y1="330" x2="1170" y2="330" stroke="#c6d1da" stroke-width="1"></line><rect class="wfbar" data-i="0" x="60" y="61.48148148148151" width="123" height="268.5185185185185" fill="var(--teal)" rx="2" style="cursor:pointer"></rect><text x="121.5" y="53.48148148148151" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">$37,848M</text><line x1="183" y1="61.48148148148151" x2="201" y2="61.48148148148151" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="121.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Gross</text><text x="121.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Sales</text><rect class="wfbar" data-i="1" x="201" y="61.48148148148151" width="123" height="22.702897359418188" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><rect class="wfbar" data-i="1" x="201" y="78.1843788408997" width="123" height="6" fill="var(--red)" rx="2" style="cursor:pointer"></rect><text x="262.5" y="98.1843788408997" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700">-$480M</text><text x="262.5" y="53.48148148148151" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$3,200M</text><line x1="324" y1="84.1843788408997" x2="342" y2="84.1843788408997" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="262.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Commercial</text><text x="262.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Rebates</text><rect class="wfbar" data-i="2" x="342" y="84.1843788408997" width="123" height="31.37966094397079" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><text x="403.5" y="76.1843788408997" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$4,423M</text><line x1="465" y1="115.56403978487049" x2="483" y2="115.56403978487049" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="403.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">340B</text><text x="403.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Discounts</text><rect class="wfbar" data-i="3" x="483" y="115.56403978487049" width="123" height="58.161985172659456" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><rect class="wfbar" data-i="3" x="483" y="165.56717121898905" width="123" height="8.158853738540909" fill="var(--red)" rx="2" style="cursor:pointer"></rect><text x="544.5" y="187.72602495752994" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700">-$1,150M</text><text x="544.5" y="107.56403978487049" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$8,198M</text><line x1="606" y1="173.72602495752994" x2="624" y2="173.72602495752994" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="544.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Medicaid</text><text x="544.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Rebates</text><rect class="wfbar" data-i="4" x="624" y="173.72602495752994" width="123" height="2.788199581953535" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><text x="685.5" y="165.72602495752994" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$393M</text><line x1="747" y1="176.51422453948348" x2="765" y2="176.51422453948348" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="685.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Medicare</text><text x="685.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Rebates</text><rect class="wfbar" data-i="5" x="765" y="176.51422453948348" width="123" height="10.563941927554282" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><text x="826.5" y="168.51422453948348" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$1,489M</text><line x1="888" y1="187.07816646703776" x2="906" y2="187.07816646703776" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="826.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Chargebacks</text><rect class="wfbar" data-i="6" x="906" y="187.07816646703776" width="123" height="2" fill="var(--orange)" rx="2" style="cursor:pointer"></rect><text x="967.5" y="179.07816646703776" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">-$85M</text><line x1="1029" y1="187.6812121781473" x2="1047" y2="187.6812121781473" stroke="#c6d1da" stroke-dasharray="3 3"></line><text x="967.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Patient</text><text x="967.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Co-Pay</text><rect class="wfbar" data-i="7" x="1047" y="187.6812121781473" width="123" height="142.3187878218527" fill="var(--green)" rx="2" style="cursor:pointer"></rect><text x="1108.5" y="179.6812121781473" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">$20,060M</text><text x="1108.5" y="352" text-anchor="middle" fill="#4a5a66" font-size="13">Net</text><text x="1108.5" y="368" text-anchor="middle" fill="#4a5a66" font-size="13">Revenue</text></svg>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <section class="card">
+        <div class="card-head"><h2>Savings by reason</h2><div class="sub">Where $1.63 Bn of leakage was avoided</div></div>
+        <div class="reasons-head"><div>Reason</div><div class="r">Distribution</div><div class="r">Savings</div></div>
+        <div id="reasons">
+    <div class="reason-row" data-key="notoncontract" onclick="openReasonModal('notoncontract')">
+      <div class="lbl">Customer not on contract<small>Claim submitted for a customer with no active contract</small></div>
+      <div class="bar"><span style="width:100%"></span></div>
+      <div class="dol">$620M</div>
+    </div>
+  
+    <div class="reason-row" data-key="ineligible" onclick="openReasonModal('ineligible')">
+      <div class="lbl">Contract requested was not eligible<small>Other contract was eligible. We applied the correct one.</small></div>
+      <div class="bar"><span style="width:66.12903225806451%"></span></div>
+      <div class="dol">$410M</div>
+    </div>
+  
+    <div class="reason-row" data-key="dup340b" onclick="openReasonModal('dup340b')">
+      <div class="lbl">Duplicate 340B discount<small>Commercial or Medicaid claim also claimed 340B</small></div>
+      <div class="bar"><span style="width:54.83870967741935%"></span></div>
+      <div class="dol">$340M</div>
+    </div>
+  
+    <div class="reason-row" data-key="medeligibility" onclick="openReasonModal('medeligibility')">
+      <div class="lbl">Medicaid eligibility mismatch<small>Rebated units did not match state program eligibility</small></div>
+      <div class="bar"><span style="width:83.87096774193549%"></span></div>
+      <div class="dol">$520M</div>
+    </div>
+  
+    <div class="reason-row" data-key="nonrebate" onclick="openReasonModal('nonrebate')">
+      <div class="lbl">Non-rebate-eligible NDC claimed<small>Product code not covered by the rebate agreement</small></div>
+      <div class="bar"><span style="width:50%"></span></div>
+      <div class="dol">$310M</div>
+    </div>
+  
+    <div class="reason-row" data-key="utilization" onclick="openReasonModal('utilization')">
+      <div class="lbl">Utilization overstated<small>Claimed units exceeded settled claim data</small></div>
+      <div class="bar"><span style="width:35.483870967741936%"></span></div>
+      <div class="dol">$220M</div>
+    </div>
+  </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Where the savings come from</h2></div>
+        <div class="tabs">
+          <button class="tab active" data-pane="wholesalers">Wholesalers</button>
+          <button class="tab" data-pane="payers">Payers / Plans</button>
+          <button class="tab" data-pane="states">States / Programs</button>
+          <button class="tab" data-pane="products">Products / NDC9</button>
+        </div>
+
+        <div class="pane active" id="pane-wholesalers">
+          <table class="score" id="tbl-wholesalers">
+            <thead><tr><th>Wholesaler</th><th class="num">Saved</th><th>Top reason</th><th>Health</th></tr></thead>
+            <tbody>
+    <tr onclick="openDimModal('McKesson', 'Customer not on contract')">
+      <td><span class="minibar"><span style="width:100%"></span></span>McKesson</td>
+      <td class="num" style="font-weight:500">$360M</td>
+      <td style="color:var(--ink-soft)">Customer not on contract</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('Cencora', 'Contract requested was not eligible')">
+      <td><span class="minibar"><span style="width:47.22222222222222%"></span></span>Cencora</td>
+      <td class="num" style="font-weight:500">$170M</td>
+      <td style="color:var(--ink-soft)">Contract requested was not eligible</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr>
+    <tr onclick="openDimModal('Cardinal', 'Paid less than requested')">
+      <td><span class="minibar"><span style="width:16.666666666666664%"></span></span>Cardinal</td>
+      <td class="num" style="font-weight:500">$60M</td>
+      <td style="color:var(--ink-soft)">Paid less than requested</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr>
+    <tr onclick="openDimModal('Morris &amp; Dickson', 'Customer not on contract')">
+      <td><span class="minibar"><span style="width:5.555555555555555%"></span></span>Morris &amp; Dickson</td>
+      <td class="num" style="font-weight:500">$20M</td>
+      <td style="color:var(--ink-soft)">Customer not on contract</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr></tbody>
+          </table>
+        </div>
+        <div class="pane" id="pane-payers">
+          <table class="score" id="tbl-payers">
+            <thead><tr><th>Payer / Plan</th><th class="num">Saved</th><th>Top reason</th><th>Health</th></tr></thead>
+            <tbody>
+    <tr onclick="openDimModal('CVS Caremark', 'Duplicate 340B discount')">
+      <td><span class="minibar"><span style="width:100%"></span></span>CVS Caremark</td>
+      <td class="num" style="font-weight:500">$260M</td>
+      <td style="color:var(--ink-soft)">Duplicate 340B discount</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('Express Scripts', 'Duplicate 340B discount')">
+      <td><span class="minibar"><span style="width:84.61538461538461%"></span></span>Express Scripts</td>
+      <td class="num" style="font-weight:500">$220M</td>
+      <td style="color:var(--ink-soft)">Duplicate 340B discount</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('OptumRx', 'Membership mismatch')">
+      <td><span class="minibar"><span style="width:38.46153846153847%"></span></span>OptumRx</td>
+      <td class="num" style="font-weight:500">$100M</td>
+      <td style="color:var(--ink-soft)">Membership mismatch</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr>
+    <tr onclick="openDimModal('Humana', 'Membership mismatch')">
+      <td><span class="minibar"><span style="width:15.384615384615385%"></span></span>Humana</td>
+      <td class="num" style="font-weight:500">$40M</td>
+      <td style="color:var(--ink-soft)">Membership mismatch</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr></tbody>
+          </table>
+        </div>
+        <div class="pane" id="pane-states">
+          <table class="score" id="tbl-states">
+            <thead><tr><th>State / Program</th><th class="num">Saved</th><th>Top reason</th><th>Health</th></tr></thead>
+            <tbody>
+    <tr onclick="openDimModal('California . FFS', 'Eligibility mismatch')">
+      <td><span class="minibar"><span style="width:100%"></span></span>California . FFS</td>
+      <td class="num" style="font-weight:500">$430M</td>
+      <td style="color:var(--ink-soft)">Eligibility mismatch</td>
+      <td><span class="pill bad">Issue</span></td>
+    </tr>
+    <tr onclick="openDimModal('Texas . Managed', 'Eligibility mismatch')">
+      <td><span class="minibar"><span style="width:67.44186046511628%"></span></span>Texas . Managed</td>
+      <td class="num" style="font-weight:500">$290M</td>
+      <td style="color:var(--ink-soft)">Eligibility mismatch</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('New York . FFS', 'Utilization overstated')">
+      <td><span class="minibar"><span style="width:41.86046511627907%"></span></span>New York . FFS</td>
+      <td class="num" style="font-weight:500">$180M</td>
+      <td style="color:var(--ink-soft)">Utilization overstated</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('Florida . Managed', 'Eligibility mismatch')">
+      <td><span class="minibar"><span style="width:20.930232558139537%"></span></span>Florida . Managed</td>
+      <td class="num" style="font-weight:500">$90M</td>
+      <td style="color:var(--ink-soft)">Eligibility mismatch</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr></tbody>
+          </table>
+        </div>
+        <div class="pane" id="pane-products">
+          <table class="score" id="tbl-products">
+            <thead><tr><th>Product (NDC9)</th><th class="num">Saved</th><th>Top reason</th><th>Health</th></tr></thead>
+            <tbody>
+    <tr onclick="openDimModal('Product A (12345-678)', 'Customer not on contract')">
+      <td><span class="minibar"><span style="width:100%"></span></span>Product A (12345-678)</td>
+      <td class="num" style="font-weight:500">$610M</td>
+      <td style="color:var(--ink-soft)">Customer not on contract</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('Product B (12345-679)', 'Duplicate 340B discount')">
+      <td><span class="minibar"><span style="width:70.49180327868852%"></span></span>Product B (12345-679)</td>
+      <td class="num" style="font-weight:500">$430M</td>
+      <td style="color:var(--ink-soft)">Duplicate 340B discount</td>
+      <td><span class="pill warn">Watch</span></td>
+    </tr>
+    <tr onclick="openDimModal('Product C (12345-680)', 'Eligibility mismatch')">
+      <td><span class="minibar"><span style="width:42.62295081967213%"></span></span>Product C (12345-680)</td>
+      <td class="num" style="font-weight:500">$260M</td>
+      <td style="color:var(--ink-soft)">Eligibility mismatch</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr>
+    <tr onclick="openDimModal('Product D (12345-681)', 'Paid less than requested')">
+      <td><span class="minibar"><span style="width:18.0327868852459%"></span></span>Product D (12345-681)</td>
+      <td class="num" style="font-weight:500">$110M</td>
+      <td style="color:var(--ink-soft)">Paid less than requested</td>
+      <td><span class="pill ok">Healthy</span></td>
+    </tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="scrim" id="scrim" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <header>
+      <div>
+        <h3 id="modalTitle">Morris &amp; Dickson</h3>
+        <div class="bc" id="modalBc">Top reason: Customer not on contract . FY2026</div>
+      </div>
+      <button class="close" onclick="closeModal()">×</button>
+    </header>
+    <div class="m-summary">
+      <div><div class="k">Deduction amount</div><div class="v ink" id="mAmt">n/a</div></div>
+      <div><div class="k">Savings opportunity captured</div><div class="v red" id="mSaved">see rows</div></div>
+      <div><div class="k">Net impact to revenue</div><div class="v ink" id="mNet">see rows</div></div>
+    </div>
+    <div class="m-tools">
+      <button class="btn" onclick="alert('Exported transactions to CSV.')">Export CSV</button>
+    </div>
+    <div class="m-body">
+      <h4 style="margin:4px 0 10px;font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px">Savings breakdown by reason</h4>
+      <div class="reason-split" id="mSplit"><div style="color:var(--ink-soft);font-size:13px">Backing transactions for <b>Morris &amp; Dickson</b> where Model N captured savings.</div></div>
+
+      <h4 style="margin:14px 0 10px;font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px">Supporting transactions (sample)</h4>
+      <table class="tx" id="mTx">
+        <thead><tr>
+          <th>Date</th><th>Transaction</th><th>Customer / Wholesaler</th><th>Product (NDC9)</th>
+          <th class="num">Requested</th><th class="num">Allowed</th><th class="num">Saved</th><th>Reason</th>
+        </tr></thead>
+        <tbody>
+    <tr>
+      <td>2026-09-13</td><td>DIM-649493</td><td>Cencora</td><td>12345-680</td>
+      <td class="num">$227</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$227</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-09-11</td><td>DIM-959895</td><td>Cencora</td><td>12345-679</td>
+      <td class="num">$353</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$353</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-02-28</td><td>DIM-699757</td><td>Cencora</td><td>12345-681</td>
+      <td class="num">$316</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$316</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-08-23</td><td>DIM-427174</td><td>Cencora</td><td>12345-681</td>
+      <td class="num">$696</td>
+      <td class="num">$517</td>
+      <td class="num" style="color:var(--red);font-weight:600">$179</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-07-28</td><td>DIM-390560</td><td>Mayo Clinic</td><td>12345-678</td>
+      <td class="num">$64</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$64</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-03-18</td><td>DIM-835042</td><td>Cleveland Clinic</td><td>12345-681</td>
+      <td class="num">$964</td>
+      <td class="num">$555</td>
+      <td class="num" style="color:var(--red);font-weight:600">$409</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-09-23</td><td>DIM-559068</td><td>Cleveland Clinic</td><td>12345-681</td>
+      <td class="num">$131</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$131</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-03-20</td><td>DIM-214714</td><td>Humana</td><td>12345-678</td>
+      <td class="num">$561</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$561</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-09-10</td><td>DIM-207673</td><td>Cleveland Clinic</td><td>12345-678</td>
+      <td class="num">$97</td>
+      <td class="num">$51</td>
+      <td class="num" style="color:var(--red);font-weight:600">$46</td>
+      <td class="reason">Customer not on contract</td>
+    </tr>
+    <tr>
+      <td>2026-08-19</td><td>DIM-259272</td><td>Walgreens</td><td>12345-681</td>
+      <td class="num">$783</td>
+      <td class="num">$0</td>
+      <td class="num" style="color:var(--red);font-weight:600">$783</td>
+      <td class="reason">Customer not on contract</td>
+    </tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="wf-tip" id="wfTip" style="display: none; left: 722px; top: 569px;"><div class="tt">Medicaid Rebates</div><div class="row"><span>Amount</span><span>-$8,198M</span></div><div class="row red"><span>Savings Opportunity</span><span>-$1,150M</span></div><div class="desc">Statutory rebates paid to state Medicaid programs under the Medicaid Drug Rebate Program. URA = greater of 23.1% of AMP or (AMP - Best Price), plus CPI penalty.</div></div>
+
+<script>
+/* ============================================================
+   Mock data. Values match the reference GTN screenshot.
+   ============================================================ */
+const WATERFALL = [
+  { key:"gross",    label:"Gross Sales",       plain:"Starting gross sales",                 kind:"gross",   amount: 37848 },
+  { key:"commrebs", label:"Commercial Rebates",plain:"Rebates paid to commercial payers",    kind:"down",    amount: -3200, saved: -480,
+    desc:"Rebates paid to PBMs and commercial health plans under negotiated contracts. Model N catches duplicate 340B overlaps, invalid membership, and off-contract claims." },
+  { key:"340b",     label:"340B Discounts",    plain:"340B program discounts",               kind:"down",    amount: -4423, saved: 0,
+    desc:"Statutory discounts to 340B covered entities. Priced at the 340B ceiling." },
+  { key:"medicaid", label:"Medicaid Rebates",  plain:"Statutory rebates to state Medicaid",  kind:"down",    amount: -8198, saved: -1150,
+    desc:"Statutory rebates paid to state Medicaid programs under the Medicaid Drug Rebate Program. URA = greater of 23.1% of AMP or (AMP - Best Price), plus CPI penalty." },
+  { key:"medicare", label:"Medicare Rebates",  plain:"Medicare Part D / Part B",             kind:"down",    amount: -393,  saved: 0,
+    desc:"Medicare Part D coverage gap discount and Part B exposure." },
+  { key:"cb",       label:"Chargebacks",       plain:"Wholesaler chargebacks",               kind:"down",    amount: -1489, saved: 0,
+    desc:"Price-protection credits owed to wholesalers for sales to contracted customers." },
+  { key:"copay",    label:"Patient Co-Pay",    plain:"Patient assistance / co-pay",          kind:"down",    amount: -85,   saved: 0,
+    desc:"Co-pay cards and patient assistance program spend." },
+  { key:"net",      label:"Net Revenue",       plain:"Final net revenue",                    kind:"net",     amount: 20060 },
+];
+
+const CHANNEL_REASONS = {
+  commrebs: [
+    { lbl:"Duplicate 340B discount on commercial claim",      dol: 240 },
+    { lbl:"Membership mismatch (patient not on plan)",        dol: 120 },
+    { lbl:"Off-contract pricing applied",                     dol:  80 },
+    { lbl:"Late submission beyond contract window",           dol:  40 },
+  ],
+  medicaid: [
+    { lbl:"Units did not match state eligibility",            dol: 520 },
+    { lbl:"Non-rebate-eligible NDC claimed",                  dol: 310 },
+    { lbl:"Utilization overstated vs. settled claim",         dol: 220 },
+    { lbl:"Duplicate 340B / Medicaid overlap",                dol: 100 },
+  ],
+};
+
+const REASONS = [
+  { key:"notoncontract",  lbl:"Customer not on contract",             sub:"Claim submitted for a customer with no active contract",    dol:620, chan:"commrebs" },
+  { key:"ineligible",     lbl:"Contract requested was not eligible",  sub:"Other contract was eligible. We applied the correct one.", dol:410, chan:"commrebs" },
+  { key:"dup340b",        lbl:"Duplicate 340B discount",              sub:"Commercial or Medicaid claim also claimed 340B",            dol:340, chan:"commrebs" },
+  { key:"medeligibility", lbl:"Medicaid eligibility mismatch",        sub:"Rebated units did not match state program eligibility",    dol:520, chan:"medicaid" },
+  { key:"nonrebate",      lbl:"Non-rebate-eligible NDC claimed",      sub:"Product code not covered by the rebate agreement",         dol:310, chan:"medicaid" },
+  { key:"utilization",    lbl:"Utilization overstated",               sub:"Claimed units exceeded settled claim data",                dol:220, chan:"medicaid" },
+];
+
+const CUSTOMERS = ["Walgreens","CVS","Kaiser","Mayo Clinic","Cleveland Clinic","Veterans Admin","Humana","Cencora"];
+function sampleTx(reasonLbl, prefix){
+  const rows = [];
+  for(let i=0;i<10;i++){
+    const req = +(50 + Math.random()*950).toFixed(0);
+    const allowed = Math.random() < .5 ? 0 : +(req * (0.4 + Math.random()*0.4)).toFixed(0);
+    const saved = req - allowed;
+    rows.push({
+      date: "2026-" + String(1+Math.floor(Math.random()*10)).padStart(2,"0") + "-" + String(1+Math.floor(Math.random()*28)).padStart(2,"0"),
+      tx: (prefix||"TX") + "-" + Math.floor(100000 + Math.random()*900000),
+      cust: CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)],
+      ndc: "12345-" + (678 + Math.floor(Math.random()*4)),
+      req, allowed, saved,
+      reason: reasonLbl
+    });
+  }
+  return rows;
+}
+
+const WHOLESALERS = [
+  { name:"McKesson",         saved:360, reason:"Customer not on contract",             health:"warn" },
+  { name:"Cencora",          saved:170, reason:"Contract requested was not eligible",  health:"ok"   },
+  { name:"Cardinal",         saved: 60, reason:"Paid less than requested",             health:"ok"   },
+  { name:"Morris & Dickson", saved: 20, reason:"Customer not on contract",             health:"warn" },
+];
+const PAYERS = [
+  { name:"CVS Caremark",    saved:260, reason:"Duplicate 340B discount",  health:"warn" },
+  { name:"Express Scripts", saved:220, reason:"Duplicate 340B discount",  health:"warn" },
+  { name:"OptumRx",         saved:100, reason:"Membership mismatch",      health:"ok"   },
+  { name:"Humana",          saved: 40, reason:"Membership mismatch",      health:"ok"   },
+];
+const STATES = [
+  { name:"California . FFS",   saved:430, reason:"Eligibility mismatch",   health:"bad"  },
+  { name:"Texas . Managed",    saved:290, reason:"Eligibility mismatch",   health:"warn" },
+  { name:"New York . FFS",     saved:180, reason:"Utilization overstated", health:"warn" },
+  { name:"Florida . Managed",  saved: 90, reason:"Eligibility mismatch",   health:"ok"   },
+];
+const PRODUCTS = [
+  { name:"Product A (12345-678)",  saved:610, reason:"Customer not on contract",  health:"warn" },
+  { name:"Product B (12345-679)",  saved:430, reason:"Duplicate 340B discount",   health:"warn" },
+  { name:"Product C (12345-680)",  saved:260, reason:"Eligibility mismatch",      health:"ok"   },
+  { name:"Product D (12345-681)",  saved:110, reason:"Paid less than requested",  health:"ok"   },
+];
+
+/* ============================================================
+   Waterfall render (light theme, red savings at bottom of bar)
+   ============================================================ */
+function fmtM(v){
+  const abs = Math.abs(v);
+  const sign = v < 0 ? "-" : "";
+  return sign + "$" + Math.round(abs).toLocaleString() + "M";
+}
+function renderWaterfall(){
+  const svg = document.getElementById("wf");
+  const W = 1200, H = 400;
+  const padL = 60, padR = 30, padT = 40, padB = 70;
+  const n = WATERFALL.length;
+  const gap = 18;
+  const colW = (W - padL - padR - gap*(n-1)) / n;
+
+  let running = WATERFALL[0].amount;
+  const positions = [];
+  for(let i=0;i<n;i++){
+    const seg = WATERFALL[i];
+    if(seg.kind === "gross"){
+      positions.push({ top: seg.amount, bottom: 0, running: seg.amount });
+    } else if(seg.kind === "net"){
+      positions.push({ top: running, bottom: 0, running });
+    } else {
+      const top = running;
+      const bottom = running + seg.amount; // amount is negative
+      positions.push({ top, bottom, running: bottom });
+      running = bottom;
+    }
+  }
+  const maxVal = Math.max(...positions.map(p=>p.top)) * 1.08;
+  const y = v => padT + (H - padT - padB) * (1 - v / maxVal);
+
+  const parts = [];
+  parts.push(`<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#c6d1da" stroke-width="1"/>`);
+
+  for(let i=0;i<n;i++){
+    const seg = WATERFALL[i];
+    const p = positions[i];
+    const x = padL + i*(colW+gap);
+
+    let fill;
+    if(seg.kind === "gross") fill = "var(--teal)";
+    else if(seg.kind === "net") fill = "var(--green)";
+    else fill = "var(--orange)";
+
+    if(seg.kind === "gross" || seg.kind === "net"){
+      const yTop = y(p.top);
+      const yBot = y(0);
+      parts.push(`<rect class="wfbar" data-i="${i}" x="${x}" y="${yTop}" width="${colW}" height="${yBot-yTop}" fill="${fill}" rx="2" style="cursor:pointer"/>`);
+      const lbl = fmtM(p.top);
+      parts.push(`<text x="${x+colW/2}" y="${yTop-8}" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">${lbl}</text>`);
+    } else {
+      const yTop = y(p.top);
+      const yBot = y(p.bottom);
+      const h = Math.max(2, yBot - yTop);
+      // deduction bar
+      parts.push(`<rect class="wfbar" data-i="${i}" x="${x}" y="${yTop}" width="${colW}" height="${h}" fill="${fill}" rx="2" style="cursor:pointer"/>`);
+      // savings band at the BOTTOM of the deduction bar (red), only if saved exists
+      if(seg.saved){
+        const savedAbs = Math.abs(seg.saved);
+        const totalAbs = Math.abs(seg.amount);
+        const savedH = Math.max(6, (savedAbs/totalAbs) * h);
+        const savedY = yBot - savedH;
+        parts.push(`<rect class="wfbar" data-i="${i}" x="${x}" y="${savedY}" width="${colW}" height="${savedH}" fill="var(--red)" rx="2" style="cursor:pointer"/>`);
+        // Saved value label inside the red band if tall enough, otherwise just below
+        if(savedH >= 16){
+          parts.push(`<text x="${x+colW/2}" y="${savedY + savedH/2 + 4}" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">${fmtM(seg.saved)}</text>`);
+        } else {
+          parts.push(`<text x="${x+colW/2}" y="${yBot+14}" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700">${fmtM(seg.saved)}</text>`);
+        }
+      }
+      // deduction amount label above
+      parts.push(`<text x="${x+colW/2}" y="${yTop-8}" text-anchor="middle" fill="#4a5a66" font-size="13" font-weight="600">${fmtM(seg.amount)}</text>`);
+    }
+
+    // Connector line
+    if(i < n-1){
+      const nextX = padL + (i+1)*(colW+gap);
+      const yLine = seg.kind === "gross" ? y(p.top) : (seg.kind === "net" ? y(p.top) : y(p.bottom));
+      parts.push(`<line x1="${x+colW}" y1="${yLine}" x2="${nextX}" y2="${yLine}" stroke="#c6d1da" stroke-dasharray="3 3"/>`);
+    }
+
+    // X labels
+    const words = seg.label.split(" ");
+    if(words.length === 1){
+      parts.push(`<text x="${x+colW/2}" y="${H-padB+22}" text-anchor="middle" fill="#4a5a66" font-size="13">${seg.label}</text>`);
+    } else {
+      parts.push(`<text x="${x+colW/2}" y="${H-padB+22}" text-anchor="middle" fill="#4a5a66" font-size="13">${words[0]}</text>`);
+      parts.push(`<text x="${x+colW/2}" y="${H-padB+38}" text-anchor="middle" fill="#4a5a66" font-size="13">${words.slice(1).join(" ")}</text>`);
+    }
+  }
+
+  svg.innerHTML = parts.join("");
+
+  const tip = document.getElementById("wfTip");
+  svg.querySelectorAll(".wfbar").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      const i = +el.getAttribute("data-i");
+      const seg = WATERFALL[i];
+      let html = `<div class="tt">${seg.label}</div>`;
+      if(seg.kind === "gross" || seg.kind === "net"){
+        html += `<div class="row"><span>Amount</span><span>${fmtM(positions[i].top)}</span></div>`;
+      } else {
+        html += `<div class="row"><span>Amount</span><span>${fmtM(seg.amount)}</span></div>`;
+        if(seg.saved){
+          html += `<div class="row red"><span>Savings Opportunity</span><span>${fmtM(seg.saved)}</span></div>`;
+        } else {
+          html += `<div class="row"><span>Savings Opportunity</span><span style="color:var(--ink-mute)">None captured</span></div>`;
+        }
+      }
+      if(seg.desc) html += `<div class="desc">${seg.desc}</div>`;
+      tip.innerHTML = html;
+      tip.style.display = "block";
+      const vw = window.innerWidth;
+      const left = Math.min(e.clientX + 14, vw - 340);
+      tip.style.left = left + "px";
+      tip.style.top = (e.clientY + 14) + "px";
+    });
+    el.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+    el.addEventListener("click", () => {
+      const i = +el.getAttribute("data-i");
+      openChannelModal(i);
+    });
+  });
+}
+
+/* ============================================================
+   Channel modal
+   ============================================================ */
+function openChannelModal(i){
+  const seg = WATERFALL[i];
+  document.getElementById("modalTitle").textContent = seg.label;
+  document.getElementById("modalBc").textContent = (seg.desc || seg.plain) + " . FY2026";
+
+  if(seg.kind === "gross" || seg.kind === "net"){
+    document.getElementById("mAmt").textContent = fmtM(seg.amount);
+    document.getElementById("mSaved").textContent = "n/a";
+    document.getElementById("mNet").textContent = fmtM(seg.amount);
+    document.getElementById("mSplit").innerHTML = `<div style="color:var(--ink-mute);font-size:13px">No deduction breakdown. This is a ${seg.kind === "gross" ? "starting" : "ending"} anchor in the waterfall.</div>`;
+    document.querySelector("#mTx tbody").innerHTML = "";
+  } else {
+    document.getElementById("mAmt").textContent = fmtM(seg.amount);
+    document.getElementById("mSaved").textContent = seg.saved ? fmtM(seg.saved) : "No savings captured this period";
+    document.getElementById("mNet").textContent = fmtM(seg.amount - (seg.saved||0));
+
+    const split = CHANNEL_REASONS[seg.key];
+    if(split && seg.saved){
+      const max = Math.max(...split.map(r=>r.dol));
+      document.getElementById("mSplit").innerHTML = split.map(r => `
+        <div class="rs-row">
+          <div>${r.lbl}</div>
+          <div class="rs-bar"><span style="width:${(r.dol/max)*100}%"></span></div>
+          <div class="num" style="text-align:right;font-weight:600;color:var(--red)">$${r.dol}M</div>
+        </div>`).join("");
+    } else {
+      document.getElementById("mSplit").innerHTML = `<div style="color:var(--ink-mute);font-size:13px">No leakage captured this period. The dashboard will populate as Model N identifies savings in this channel.</div>`;
+    }
+
+    const topReason = split && split[0] ? split[0].lbl : seg.label;
+    const rows = sampleTx(topReason, seg.key.toUpperCase());
+    document.querySelector("#mTx tbody").innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.date}</td><td>${r.tx}</td><td>${r.cust}</td><td>${r.ndc}</td>
+        <td class="num">$${r.req.toLocaleString()}</td>
+        <td class="num">$${r.allowed.toLocaleString()}</td>
+        <td class="num" style="color:var(--red);font-weight:600">$${r.saved.toLocaleString()}</td>
+        <td class="reason">${r.reason}</td>
+      </tr>`).join("");
+  }
+
+  document.getElementById("scrim").classList.add("open");
+}
+function closeModal(){
+  document.getElementById("scrim").classList.remove("open");
+}
+
+/* ============================================================
+   Reasons list
+   ============================================================ */
+function renderReasons(){
+  const host = document.getElementById("reasons");
+  const maxDol = Math.max(...REASONS.map(r=>r.dol));
+  host.innerHTML = REASONS.map(r => `
+    <div class="reason-row" data-key="${r.key}" onclick="openReasonModal('${r.key}')">
+      <div class="lbl">${r.lbl}<small>${r.sub}</small></div>
+      <div class="bar"><span style="width:${(r.dol/maxDol)*100}%"></span></div>
+      <div class="dol">$${r.dol}M</div>
+    </div>
+  `).join("");
+}
+function openReasonModal(key){
+  const r = REASONS.find(x => x.key === key);
+  document.getElementById("modalTitle").textContent = r.lbl;
+  document.getElementById("modalBc").textContent = r.sub + " . FY2026";
+  document.getElementById("mAmt").textContent = "n/a";
+  document.getElementById("mSaved").textContent = "$" + r.dol + "M";
+  document.getElementById("mNet").textContent = "+$" + r.dol + "M";
+  document.getElementById("mSplit").innerHTML = `<div style="color:var(--ink-soft);font-size:13px">This reason category appears in the <b>${WATERFALL.find(w=>w.key===r.chan).label}</b> channel of the waterfall.</div>`;
+  const rows = sampleTx(r.lbl, r.key.toUpperCase());
+  document.querySelector("#mTx tbody").innerHTML = rows.map(row => `
+    <tr>
+      <td>${row.date}</td><td>${row.tx}</td><td>${row.cust}</td><td>${row.ndc}</td>
+      <td class="num">$${row.req.toLocaleString()}</td>
+      <td class="num">$${row.allowed.toLocaleString()}</td>
+      <td class="num" style="color:var(--red);font-weight:600">$${row.saved.toLocaleString()}</td>
+      <td class="reason">${row.reason}</td>
+    </tr>`).join("");
+  document.getElementById("scrim").classList.add("open");
+}
+
+/* ============================================================
+   Scorecards (no reject/dup/issue rate columns)
+   ============================================================ */
+function healthPill(h){
+  if(h==="ok") return `<span class="pill ok">Healthy</span>`;
+  if(h==="warn") return `<span class="pill warn">Watch</span>`;
+  return `<span class="pill bad">Issue</span>`;
+}
+function renderScorecard(id, rows, kind){
+  const tbody = document.querySelector(`#${id} tbody`);
+  const maxSaved = Math.max(...rows.map(r=>r.saved));
+  tbody.innerHTML = rows.map(r => `
+    <tr onclick="openDimModal('${r.name}', '${r.reason}')">
+      <td><span class="minibar"><span style="width:${(r.saved/maxSaved)*100}%"></span></span>${r.name}</td>
+      <td class="num" style="font-weight:500">$${r.saved}M</td>
+      <td style="color:var(--ink-soft)">${r.reason}</td>
+      <td>${healthPill(r.health)}</td>
+    </tr>`).join("");
+}
+function openDimModal(name, reason){
+  document.getElementById("modalTitle").textContent = name;
+  document.getElementById("modalBc").textContent = "Top reason: " + reason + " . FY2026";
+  document.getElementById("mAmt").textContent = "n/a";
+  document.getElementById("mSaved").textContent = "see rows";
+  document.getElementById("mNet").textContent = "see rows";
+  document.getElementById("mSplit").innerHTML = `<div style="color:var(--ink-soft);font-size:13px">Backing transactions for <b>${name}</b> where Model N captured savings.</div>`;
+  const rows = sampleTx(reason, "DIM");
+  document.querySelector("#mTx tbody").innerHTML = rows.map(row => `
+    <tr>
+      <td>${row.date}</td><td>${row.tx}</td><td>${row.cust}</td><td>${row.ndc}</td>
+      <td class="num">$${row.req.toLocaleString()}</td>
+      <td class="num">$${row.allowed.toLocaleString()}</td>
+      <td class="num" style="color:var(--red);font-weight:600">$${row.saved.toLocaleString()}</td>
+      <td class="reason">${row.reason}</td>
+    </tr>`).join("");
+  document.getElementById("scrim").classList.add("open");
+}
+
+/* ============================================================
+   Share menu + tabs + boot
+   ============================================================ */
+function toggleShare(e){ e.stopPropagation(); document.getElementById("shareMenu").classList.toggle("open"); }
+document.addEventListener("click", () => document.getElementById("shareMenu").classList.remove("open"));
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    const target = t.getAttribute("data-pane");
+    document.querySelectorAll(".pane").forEach(p => p.classList.toggle("active", p.id === "pane-"+target));
+  });
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+
+renderWaterfall();
+renderReasons();
+renderScorecard("tbl-wholesalers", WHOLESALERS, "wholesalers");
+renderScorecard("tbl-payers",      PAYERS,      "payers");
+renderScorecard("tbl-states",      STATES,      "states");
+renderScorecard("tbl-products",    PRODUCTS,    "products");
+</script>
+
+
+</body></html>
